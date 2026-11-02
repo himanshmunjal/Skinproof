@@ -50,6 +50,13 @@ describe("pre-purchase fit", () => {
   it("skips duplicates of an irritant already on the shelf", () => {
     const fit = assessFit({ name: "Night Retinal", actives: detectActives(["Retinal"]) }, shelf, ["wrinkle"]);
     expect(fit.verdict).toBe("skip");
+    expect(fit.headline).toBe("Retinol Serum on your shelf already contains Retinoid. Doubling up adds irritation, not results.");
+  });
+  it("keeps acronyms intact in the skip headline", () => {
+    const toner = { id: "t", name: "Glycolic Toner", slot: "pm" as const, actives: detectActives(["Glycolic Acid"]) };
+    const fit = assessFit({ name: "Acid Serum", actives: detectActives(["Lactic Acid"]) }, [toner], ["texture"]);
+    expect(fit.verdict).toBe("skip");
+    expect(fit.headline).toContain("already contains AHA (glycolic/lactic/mandelic).");
   });
   it("buy_with_care when it matches but clashes", () => {
     const fit = assessFit({ name: "AHA Peel", actives: detectActives(["Glycolic Acid"]) }, shelf, ["texture"]);

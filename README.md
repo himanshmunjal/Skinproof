@@ -89,7 +89,7 @@ npm run dev                 # http://localhost:3000
 
 ### Scripts
 
-`npm run dev` · `build` · `start` · `test` (vitest, 62 tests) · `typecheck` · `lint` · `db:generate` · `db:migrate` · `db:seed` · `setup`
+`npm run dev` · `build` · `start` · `test` (vitest, 63 tests) · `typecheck` · `lint` · `db:generate` · `db:migrate` · `db:seed` · `setup`
 
 ## Deploy (Vercel + free Postgres)
 

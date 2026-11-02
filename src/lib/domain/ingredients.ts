@@ -164,7 +164,8 @@ export function assessFit(
   } else if (duplicates.some((d) => d.severity === "avoid")) {
     verdict = "skip";
     const dupLabel = candidate.actives.find((a) => a.active === duplicates[0].actives[0])?.label ?? duplicates[0].actives[0];
-    headline = `You already use a ${dupLabel.toLowerCase()} (${duplicates[0].products.find((p) => p.id !== cand.id)?.name}). Doubling up adds irritation, not results.`;
+    // Keep the label as written: lowercasing or adding "a" breaks acronyms ("a aha").
+    headline = `${duplicates[0].products.find((p) => p.id !== cand.id)?.name} on your shelf already contains ${dupLabel}. Doubling up adds irritation, not results.`;
   } else if (!matches.length) {
     verdict = "not_for_you";
     headline = `It doesn't target your weakest areas (${weakestConcerns.map(nice).join(", ")}).`;
