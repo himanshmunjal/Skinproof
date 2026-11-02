@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+/* Theme is driven by `data-theme` on <html> ("light" | "dark"), set before paint by the inline script in
+   layout.tsx from the saved choice or the OS preference. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* SkinProof design tokens. Light is the primary theme; dark mirrors it. */
+:root {
+  --bg: #f7f3ee;
+  --bg-glow-1: rgb(20 184 166 / 0.16);
+  --bg-glow-2: rgb(251 146 160 / 0.14);
+  --surface: #ffffff;
+  --surface-2: #f2ece5;
+  --ink: #1c1917;
+  --muted: #6b635c;
+  --line: #e6dfd7;
+  --accent: #0f766e;
+  --accent-2: #e11d74;
+  --accent-ink: #ffffff;
+  --accent-soft: #d5f0eb;
+  --good: #15803d;
+  --good-soft: #dcfce7;
+  --bad: #b42318;
+  --bad-soft: #fde4e1;
+  --warn: #b45309;
+  --warn-soft: #fef0d7;
+  --noise: #8a817a;
+  --noise-soft: #ece7e1;
+  --shadow: 0 1px 2px rgb(28 25 23 / 0.04), 0 8px 24px -12px rgb(28 25 23 / 0.12);
+  --shadow-lg: 0 2px 4px rgb(28 25 23 / 0.04), 0 24px 48px -20px rgb(28 25 23 / 0.25);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0f0d0c;
+  --bg-glow-1: rgb(45 212 191 / 0.1);
+  --bg-glow-2: rgb(244 114 182 / 0.08);
+  --surface: #191614;
+  --surface-2: #231f1c;
+  --ink: #f3efea;
+  --muted: #a69d95;
+  --line: #312b27;
+  --accent: #2dd4bf;
+  --accent-2: #f472b6;
+  --accent-ink: #062521;
+  --accent-soft: #123a35;
+  --good: #4ade80;
+  --good-soft: #13321f;
+  --bad: #f87171;
+  --bad-soft: #3a1714;
+  --warn: #fbbf24;
+  --warn-soft: #3a2a0c;
+  --noise: #a69d95;
+  --noise-soft: #2a2522;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -20px rgb(0 0 0 / 0.8);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-noise: var(--noise);
+  --color-noise-soft: var(--noise-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --shadow-card: var(--shadow);
+  --shadow-lift: var(--shadow-lg);
+  --animate-rise: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-fade: fade 0.3s ease-out both;
+  --animate-sheet: sheet 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sheet {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes scanline {
+  0% { transform: translateY(-10%); opacity: 0; }
+  10%, 90% { opacity: 1; }
+  100% { transform: translateY(1100%); opacity: 0; }
+}
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(60rem 30rem at 85% -10%, var(--bg-glow-1), transparent 60%),
+    radial-gradient(50rem 28rem at -10% 10%, var(--bg-glow-2), transparent 60%),
+    var(--bg);
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.015em;
+}
+
+/* Gradient headline text (hero, big numbers). */
+.text-gradient {
+  background: linear-gradient(100deg, var(--accent) 10%, var(--accent-2) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Loading placeholder. */
+.skeleton {
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--line) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body { background: #fff; }
+}

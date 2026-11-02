@@ -1,0 +1,72 @@
+// SkinProof — high-level architecture. Render: dot -Tpng -Gdpi=160 docs/architecture.dot -o docs/architecture.png
+digraph SkinProof {
+  graph [rankdir=LR, fontname="Helvetica", fontsize=22, labelloc=t, pad=0.4, nodesep=0.35, ranksep=0.9, bgcolor="white",
+         label=<<b>SkinProof — Architecture</b><br/><font point-size="13" color="#555555">Next.js 16 (App Router, Node runtime) · YouCam Skin AI · LLM agent (Groq / Gemini) · PostgreSQL / PGlite</font>>];
+  node  [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, color="#94a3b8", fillcolor="#f8fafc", margin="0.18,0.10"];
+  edge  [fontname="Helvetica", fontsize=10, color="#64748b", fontcolor="#334155"];
+
+  subgraph cluster_client {
+    label=<<b>Browser / Phone (PWA-style web app)</b>>; style="rounded,filled"; fillcolor="#eef2ff"; color="#818cf8"; fontsize=14;
+    capture  [label="Capture + Quality Gate\n(camera / upload, brightness,\nresolution, blur, face-oval guide)"];
+    results  [label="Scan Result\n(scores, skin age, mask overlay,\nnoise-aware deltas)"];
+    progress [label="Progress & 28-day Trials\n(timeline, noise band, verdicts)"];
+    shelf    [label="Shelf + Pre-purchase Check\n(label photo / URL / paste)"];
+    coach    [label="Coach Chat\n(SSE stream of agent steps)"];
+    brand    [label="Brand Insights\n(Verified Results, anonymized)"];
+  }
+
+  subgraph cluster_server {
+    label=<<b>Next.js server — Route Handlers (/api/*)</b>>; style="rounded,filled"; fillcolor="#ecfdf5"; color="#34d399"; fontsize=14;
+
+    api [label="API layer\n/api/scans · /api/products · /api/check\n/api/trials · /api/diary · /api/agent\n/api/brand · /api/images · /api/me", fillcolor="#d1fae5"];
+
+    subgraph cluster_domain {
+      label="Domain services (pure TS, unit-testable)"; style="rounded,dashed"; color="#10b981"; fontsize=12;
+      scansvc  [label="ScanService\nupload → create task → lazy poll\n→ persist scores + masks"];
+      noise    [label="NoiseModel\ncalibration pair → per-concern\nthreshold → verdicts"];
+      ingr     [label="IngredientEngine\nINCI → actives → concerns\n+ deterministic conflict rules"];
+      trial    [label="TrialEngine\n28-day single-variable trial\n→ verdict + Verified Result"];
+      agent    [label="SkinProof Agent\ntool-calling loop\n(9 tools over the domain)", fillcolor="#fef3c7", color="#f59e0b"];
+      imgsvc   [label="ImageService\nsharp: EXIF rotate, resize\n≤2560px, JPEG"];
+      usage    [label="UsageMeter\nYouCam unit budget"];
+    }
+
+    subgraph cluster_adapters {
+      label="Adapters"; style="rounded,dashed"; color="#10b981"; fontsize=12;
+      ycclient [label="YouCamClient\n(real | mock, same interface)"];
+      claude   [label="LLM client\nopenai SDK (compat)\n+ SSRF-safe page fetch"];
+      db       [label="Drizzle ORM\npostgres-js | PGlite"];
+    }
+  }
+
+  subgraph cluster_ext {
+    label=<<b>External services</b>>; style="rounded,filled"; fillcolor="#fff1f2"; color="#fb7185"; fontsize=14;
+    youcam [label="YouCam API\nPOST /s2s/v2.0/file → PUT presigned\nPOST /s2s/v2.0/task/skin-analysis\nGET  /s2s/v2.0/task/skin-analysis/{id}", fillcolor="#ffe4e6"];
+    s3     [label="YouCam result storage\n(mask_urls, 24h TTL)", fillcolor="#ffe4e6"];
+    anth   [label="Groq or Gemini\n(free tier, OpenAI-compatible)\nchat + tools + vision", fillcolor="#ffe4e6"];
+  }
+
+  pg [label="PostgreSQL 17 (or embedded PGlite)\nusers · images · scans · scan_scores · noise_profiles\nproducts · trials · diary_entries · chat_messages\nverified_reviews · api_usage", shape=cylinder, fillcolor="#e0f2fe", color="#38bdf8"];
+
+  // client -> api
+  capture -> api [label="multipart image"];
+  results -> api [label="poll scan"];
+  progress -> api; shelf -> api; brand -> api;
+  coach -> api [label="SSE"];
+
+  // api -> domain
+  api -> scansvc; api -> trial; api -> ingr; api -> agent; api -> noise;
+  scansvc -> imgsvc; scansvc -> ycclient; scansvc -> usage; scansvc -> noise;
+  trial -> noise;
+  agent -> scansvc [style=dashed, label="tools"]; agent -> ingr [style=dashed]; agent -> trial [style=dashed];
+  agent -> claude; ingr -> claude [label="label OCR /\nINCI extraction"];
+
+  // adapters -> external
+  ycclient -> youcam [label="Bearer API key"];
+  scansvc -> s3 [label="download masks\nbefore TTL"];
+  claude -> anth;
+
+  // persistence
+  scansvc -> db; noise -> db; ingr -> db; trial -> db; agent -> db; usage -> db; imgsvc -> db;
+  db -> pg;
+}
